@@ -13,4 +13,7 @@ import org.junit.Test;
  */
 public class SeacherDemo  {
 	
+	public void seacher(){
+		
+	}
 }

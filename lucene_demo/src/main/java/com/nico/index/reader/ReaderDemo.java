@@ -26,7 +26,6 @@ public class ReaderDemo extends TestData{
 		Analyzer analyzer=new HanLPAnalyzer();
 		IndexReader indexReader = LuceneUtil.getIndexReader(INDEX_PATH, analyzer);
 		
-		
 		indexReader.close();
 	}
 }
