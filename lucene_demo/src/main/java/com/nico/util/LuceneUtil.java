@@ -3,6 +3,7 @@ package com.nico.util;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.DirectoryReader;
@@ -23,10 +24,6 @@ import org.apache.lucene.store.FSDirectory;
  * @version
  */
 public class LuceneUtil {
-	private  Directory directory;
-	private  IndexWriter indexWriter;
-	private  IndexReader indexReader;
-	private  IndexSearcher indexSearcher;
 	
 	/**
 	 * 

@@ -29,14 +29,14 @@ import com.nico.util.LuceneUtil;
  */
 public class WriterDemo extends TestData {
 
-	@Test
-	public void run() throws Exception {
-		System.out.println(11111);
-	}
 
 	/**
 	 * 
-	 * @Title: 创建索引 @Description: @date 2018年6月21日 @throws Exception @throws
+	 * @Title: 创建索引 
+	 * @Description: 
+	 * @date 2018年6月21日 
+	 * @throws Exception 
+	 * @throws
 	 */
 	@Test
 	public void index() {
@@ -106,4 +106,62 @@ public class WriterDemo extends TestData {
 		}
 
 	}
+	
+	/**
+	 * 
+	 * @Title: 标记删除--文件还在
+	 * @Description: 
+	 * @date 2018年6月21日  
+	 * @throws IOException        
+	 * @throws
+	 */
+	@Test
+	public void deleteDocsByIdent() throws IOException{
+		Analyzer analyzer = new HanLPAnalyzer();
+		IndexWriter indexWriter = LuceneUtil.getIndexWriter(INDEX_PATH, analyzer);
+		indexWriter.deleteDocuments(new Term("id", "2"));
+		indexWriter.commit();
+		indexWriter.close();
+	}
+	
+	/**
+	 * 
+	 * @Title: 强制删除--现将文件进行标记删除，然后再forceMergeDeletes一次性删除
+	 * @Description: 
+	 * @date 2018年6月21日  
+	 * @throws IOException        
+	 * @throws
+	 */
+	@Test
+	public void deleteDocsByForce() throws IOException{
+		Analyzer analyzer = new HanLPAnalyzer();
+		IndexWriter indexWriter = LuceneUtil.getIndexWriter(INDEX_PATH, analyzer);
+		indexWriter.deleteDocuments(new Term("id", "3"));
+		indexWriter.forceMergeDeletes(false);
+		indexWriter.commit();
+		indexWriter.close();
+	}
+	
+	
+	/**
+	 * @throws IOException 
+	 * 
+	 * @Title: 
+	 * @Description: 
+	 * @date 2018年6月21日          
+	 * @throws
+	 */
+	@Test
+	public void docNumbers() throws IOException{
+		//
+		Analyzer analyzer = new HanLPAnalyzer();
+		IndexWriter indexWriter = LuceneUtil.getIndexWriter(INDEX_PATH, analyzer);
+		
+		System.out.println("DOC 总数："+indexWriter.maxDoc());
+		System.out.println("DOC 实际数："+indexWriter.numDocs());
+		
+		indexWriter.close();
+		
+	}
+	
 }
