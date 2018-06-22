@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
@@ -12,6 +13,7 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.junit.Test;
@@ -42,7 +44,9 @@ public class SeacherDemo extends TestData {
 	 * 缓存indexReaders
 	 */
 	private static  Map<String,IndexReader> indexReaders=new HashMap<String, IndexReader>();
-	
+	/**
+	 * 解析器
+	 */
 	private static Analyzer analyzer= new HanLPAnalyzer();
 	
 	
@@ -85,7 +89,75 @@ public class SeacherDemo extends TestData {
 		QueryParser QueryParser=new QueryParser("id", analyzer);
 		Query parse = QueryParser.parse("1");
 		TopDocs search = indexSearcher.search(parse, 10);
+		System.out.println(search.totalHits);
+		for (ScoreDoc scoreDoc: search.scoreDocs) {
+			Document doc = indexSearcher.doc(scoreDoc.doc);
+			System.out.println(doc.get("id"));
+			System.out.println(doc.get("name"));
+			System.out.println(doc.get("title"));
+			System.out.println(doc.get("content"));
+			System.out.println(doc.get("contents_no_save"));
+		}
 		
 	}
+	
+	@Test
+	public void seacherContent() throws Exception{
+		IndexSearcher indexSearcher = getIndexSearcher(INDEX_PATH);
+		QueryParser QueryParser=new QueryParser("content", analyzer);
+		Query parse = QueryParser.parse("长江司令");
+		TopDocs search = indexSearcher.search(parse, 10);
+		System.out.println(search.totalHits);
+		for (ScoreDoc scoreDoc: search.scoreDocs) {
+			Document doc = indexSearcher.doc(scoreDoc.doc);
+			System.out.println(doc.get("id"));
+			System.out.println(doc.get("name"));
+			System.out.println(doc.get("title"));
+			System.out.println(doc.get("content"));
+			System.out.println(doc.get("contents_no_save"));
+		}
+		
+	}
+	
+	@Test
+	public void seacherName() throws Exception{
+		IndexSearcher indexSearcher = getIndexSearcher(INDEX_PATH);
+		QueryParser QueryParser=new QueryParser("name", analyzer);
+		Query parse = QueryParser.parse("江西省");
+		//Query parse = QueryParser.parse("江西");
+		TopDocs search = indexSearcher.search(parse, 10);
+		System.out.println(search.totalHits);
+		for (ScoreDoc scoreDoc: search.scoreDocs) {
+			Document doc = indexSearcher.doc(scoreDoc.doc);
+			System.out.println(doc.get("id"));
+			System.out.println(doc.get("name"));
+			System.out.println(doc.get("title"));
+			System.out.println(doc.get("content"));
+			System.out.println(doc.get("contents_no_save"));
+		}
+		
+	}
+	
+	@Test
+	public void seacherTitle() throws Exception{
+		IndexSearcher indexSearcher = getIndexSearcher(INDEX_PATH);
+		QueryParser QueryParser=new QueryParser("title", analyzer);
+		Query parse = QueryParser.parse("江西");
+		//Query parse = QueryParser.parse("江西");
+		TopDocs search = indexSearcher.search(parse, 10);
+		System.out.println(search.totalHits);
+		for (ScoreDoc scoreDoc: search.scoreDocs) {
+			Document doc = indexSearcher.doc(scoreDoc.doc);
+			System.out.println(doc.get("id"));
+			System.out.println(doc.get("name"));
+			System.out.println(doc.get("title"));
+			System.out.println(doc.get("content"));
+			System.out.println(doc.get("contents_no_save"));
+		}
+		
+	}
+	
+	
+	
 	
 }

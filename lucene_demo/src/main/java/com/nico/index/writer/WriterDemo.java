@@ -57,6 +57,8 @@ public class WriterDemo extends TestData {
 				doc.add(new IntField("id", Integer.parseInt(IDS[i]), Field.Store.YES));
 				// name不分词
 				doc.add(new StringField("name", NAMES[i], Field.Store.YES));
+				// title不分词
+				doc.add(new StringField("title2", TITLES[i], Field.Store.YES));
 				// title分词
 				doc.add(new TextField("title", TITLES[i], Field.Store.YES));
 				// contents分词
