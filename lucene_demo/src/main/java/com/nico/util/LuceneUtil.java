@@ -129,7 +129,12 @@ public class LuceneUtil {
 	public static IndexReader getIndexReader(IndexReader indexReader){
 		if(indexReader!=null){
 			try {
-				return DirectoryReader.openIfChanged((DirectoryReader)indexReader);
+				IndexReader tr = DirectoryReader.openIfChanged((DirectoryReader)indexReader);
+	            if(tr!=null) {
+	            	indexReader.close();
+	            	indexReader = tr;
+	            }
+				return indexReader;
 			} catch (IOException e) {
 				System.out.println("获取indexReader失败!");
 				e.printStackTrace();
@@ -151,6 +156,16 @@ public class LuceneUtil {
 	public static IndexSearcher getIndexSearcher(IndexReader indexReader){
 		IndexSearcher is=new IndexSearcher(indexReader);
 		return is;
+	}
+	
+	public void setProxy(){
+	   	// 设置http访问要使用的代理服务器的地址
+    	System.setProperty("http.proxySet", "true");
+    	System.setProperty("http.proxyHost", "127.0.0.1");
+    	System.setProperty("http.proxyPort", "8888");
+    	 // socks代理服务器的地址与端口
+    	System.setProperty("socksProxyHost", "127.0.0.1");
+    	System.setProperty("socksProxyPort", "8889");
 	}
 	
 }

@@ -18,10 +18,18 @@ import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.SortedNumericSortField;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.grouping.GroupDocs;
+import org.apache.lucene.search.grouping.GroupingSearch;
+import org.apache.lucene.search.grouping.TopGroups;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.Version;
 import org.junit.Test;
 
 import com.hankcs.lucene.HanLPAnalyzer;
@@ -88,9 +96,83 @@ public class SeacherQueryType extends TestData {
 		return new IndexSearcher(indexReader);
 	}
 	
-
 	
-
+	/**
+	 * 指定项搜索
+	 * @throws Exception
+	 */
+	@Test
+	public void testTermQuery()throws Exception{
+		IndexSearcher is = getIndexSearcher(INDEX_PATH);
+		
+		BooleanQuery.Builder booleanQuery=new BooleanQuery.Builder();
+		//lucene搜索分分词和不分词2种情况，分词时每一个都是  不分词时，必须得写全才能搜索到
+		//同时每一种搜索类都会决定最终是分词还是不分词--如TermQuery就不会分词
+		Query companyIdQuery = new TermQuery(new Term("title2","南京java SeacherDemo")); 
+		booleanQuery.add(companyIdQuery,BooleanClause.Occur.MUST); 
+		TopDocs hits=is.search(booleanQuery.build(), 10);
+		for(ScoreDoc scoreDoc:hits.scoreDocs){
+			Document doc=is.doc(scoreDoc.doc);
+			System.out.println(doc.get("id"));
+			System.out.println(doc.get("title"));
+		}		
+	}
+	
+	
+	/**
+	 * 分组查询--需要先将某个字段列入分组，才能进行分组查询
+	 */
+	@Test
+	public void testGroupQuery()throws Exception{
+		String groupField="group3";
+		IndexSearcher is = getIndexSearcher(INDEX_PATH);
+		//
+		GroupingSearch groupingSearch = new GroupingSearch(groupField);
+		//正序
+		Sort sort=new Sort(new SortField("group3",SortField.Type.STRING ,false));
+		//倒序
+		//Sort sort=new Sort(new SortField("group3",SortField.Type.STRING ,false));
+		//组间排序
+	    //groupingSearch.setGroupSort(new Sort(SortField.FIELD_SCORE));
+		groupingSearch.setGroupSort(sort);
+	    //组内排序
+	    groupingSearch.setSortWithinGroup(new Sort(SortField.FIELD_SCORE));
+	    groupingSearch.setFillSortFields(true);
+	   //第一次查询缓存容量的大小：设置为16M
+	    groupingSearch.setCachingInMB(16.0, true);
+	    groupingSearch.setAllGroups(true);
+	    //groupingSearch.setAllGroupHeads(true);
+	    groupingSearch.setGroupDocsLimit(10);
+	 
+	    String queryWords="江西 南京 中国 东部";
+	    QueryParser queryParser=new QueryParser("content",new HanLPAnalyzer());
+	    Query query = queryParser.parse(queryWords);
+ 
+	    TopGroups<BytesRef> result = groupingSearch.search(is, query, 0, 1000);
+	 
+	    //总命中数
+        System.out.println("总命中数:"+result.totalHitCount);
+        //分组数
+        System.out.println("分组数:"+result.groups.length);
+        //按照分组打印查询结果
+        for (GroupDocs<BytesRef> groupDocs : result.groups){
+        	System.out.println("组内数据条数:" + groupDocs.totalHits);
+        	if (groupDocs.groupValue != null) {
+                System.out.println("分组:" + groupDocs.groupValue.utf8ToString());
+            }else{
+            	System.out.println("组内groupValue:" + groupDocs.groupValue);
+            }
+        	
+        	System.out.println("组内toString:" + groupDocs.toString());
+        	for(ScoreDoc scoreDoc : groupDocs.scoreDocs){
+                Document doc=is.doc(scoreDoc.doc);
+                System.out.println(doc.get("id"));
+                System.out.println(doc.get("title"));
+            }
+		}		
+	}
+	
+	
 	/**
 	 * 指定项范围搜索
 	 * @throws Exception
@@ -202,12 +284,10 @@ public class SeacherQueryType extends TestData {
 	 */
 	@Test
 	public void seacherSqlMode() throws Exception{
-		QueryParser queryParser = new QueryParser("content", analyzer);
+		QueryParser queryParser = new QueryParser("contents_string", analyzer);
 
 		queryParser.setAllowLeadingWildcard(true);//设置允许通配符？和*就可以使用
-		queryParser.setDefaultOperator(Operator.AND);//默认or
-		String str="";
-		
+//		queryParser.setDefaultOperator(Operator.AND);//默认or
 		
 //		这里的str有很多，
 //
@@ -231,7 +311,20 @@ public class SeacherQueryType extends TestData {
 		
 //		10.“北京 OR 南京” 查找content中有北京或者有南京的，要大写，小写不算
 		
+		String str="江西*中国*";
 		Query query = queryParser.parse(str); 
+		IndexSearcher indexSearcher = getIndexSearcher(INDEX_PATH);
+		TopDocs search = indexSearcher.search(query, 10);
+		System.out.println(search.totalHits);
+		for (ScoreDoc scoreDoc : search.scoreDocs) {
+			Document doc = indexSearcher.doc(scoreDoc.doc);
+			System.out.println(doc.get("id"));
+			System.out.println(doc.get("name"));
+			System.out.println(doc.get("title"));
+			System.out.println(doc.get("content"));
+			System.out.println(doc.get("contents_no_save"));
+		}
+		
 	}
 	
 }

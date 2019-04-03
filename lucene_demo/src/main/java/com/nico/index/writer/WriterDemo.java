@@ -6,12 +6,15 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.IntField;
+import org.apache.lucene.document.SortedDocValuesField;
+import org.apache.lucene.document.SortedSetDocValuesField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.util.BytesRef;
 import org.junit.Test;
 
 import com.hankcs.lucene.HanLPAnalyzer;
@@ -57,15 +60,22 @@ public class WriterDemo extends TestData {
 				doc.add(new IntField("id", Integer.parseInt(IDS[i]), Field.Store.YES));
 				// name不分词
 				doc.add(new StringField("name", NAMES[i], Field.Store.YES));
+				// group不分词
+				doc.add(new Field("group", GROUPS[i],StringField.TYPE_STORED));
+				// group分组      SortedDocValuesField
+				doc.add(new SortedDocValuesField("group2", new BytesRef(GROUPS[i])));
+				
+				doc.add(new SortedDocValuesField("group3", new BytesRef(GROUPS_INDEX[i])));
 				// title不分词
-				doc.add(new StringField("title2", TITLES[i], Field.Store.YES));
+				doc.add(new Field("title2", TITLES[i],StringField.TYPE_STORED));
 				// title分词
 				doc.add(new TextField("title", TITLES[i], Field.Store.YES));
-				// contents分词
+				// contents分词--并保存原文内容
 				doc.add(new TextField("content", CONTENTS[i], Field.Store.YES));
-				// contents_no_save分词不保存
+				// contents_no_save分词不保存--不保存原文内容(只能检索不能展示)
 				doc.add(new TextField("contents_no_save", CONTENTS_NO_SAVE[i], Field.Store.NO));
-				// 开始创建索引
+				// contents不分词
+				doc.add(new Field("contents_string", CONTENTS[i],StringField.TYPE_STORED));
 //				{
 //					// 第一种方案，先查后判断
 //					QueryParser queryParser = new QueryParser("id", analyzer);
@@ -82,7 +92,7 @@ public class WriterDemo extends TestData {
 				{
 					// 第二种方案
 					// 实际indexWriter.updateDocument，lucene的做法是如果存在就更新，不存在就新增
-
+					
 					indexWriter.updateDocument(new Term("id", IDS[i]), doc);
 
 				}
